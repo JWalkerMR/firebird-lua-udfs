@@ -1,0 +1,10 @@
+#!/bin/bash
+
+./make without-ibutil
+
+export LD_LIBRARY_PATH=/lib
+
+echo "$(./test_lua_udf)"
+
+./make
+

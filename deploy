@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# copy lib files to firebird server's udf directory
+#
+
+name=lua_udf
+
+[ "$deploy" ] || deploy="$1"
+[ "$deploy" ] || { echo "\$deploy variable not set!"; exit 1; }
+
+cp "lib$name.so" "$deploy/"
+cp "$name.lua" "$deploy/"
+
