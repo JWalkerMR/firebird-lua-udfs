@@ -1,8 +1,5 @@
 #!/bin/bash
 
-name=lua_udf
-deploy=/Files/fbtest-udf-directory
-
 [ "$1" = "without-ibutil" ] || opt="-DUSE_IB_UTIL_MALLOC"
 
 # make library

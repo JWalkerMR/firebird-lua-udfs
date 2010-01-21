@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lua_udf.h"
+#include "../lua_udf.h"
 
 // tools //
 char* to_varchar(char* s) {

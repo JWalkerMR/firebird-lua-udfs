@@ -1,0 +1,43 @@
+Pre-build binaries, building scripts, as well as source and binary
+dependencies are included in the package for the following platforms:
+ - Win32 (build is via MSVC++ 8.0)
+ - Linux32
+
+Build scripts can be made for any platform supported by the Firebird
+client library and Lua.
+
+Installation for Win32 platforms
+--------------------------------
+1. Copy build.win32\lua_udf.dll and src\lua_udf.lua to either
+your windows system32 directory or to the Firebird bin directory.
+2. Register the UDFs to your database by attaching to the database
+and running src\lua_udf.sql.
+
+Installation for Linux32 platforms
+----------------------------------
+1. Copy build.linux32/lua_udf.so and src/lua_udf.lua to either
+your global lib directory or to your Firebird lib directory.
+2. Register the UDFs to your database by attaching to the database
+and running src\lua_udf.sql.
+
+Dependencies (all included)
+---------------------------
+- Lua 5.1.4 public headers, static lib, dynamic lib
+  http://luabinaries.luaforge.net/download.html
+- Firebird 2.5 public headers, ib_util static & dynamic lib
+  http://sourceforge.net/projects/firebird/files/
+- md5.h + md5.c
+  http://sourceforge.net/projects/libmd5-rfc/files/
+- msvcrt80.dll (required on Win32 by Lua and ib_util)
+
+Build lua_udf on Windows using MSVC++ 8.0
+-----------------------------------------
+1. open up a Visual Studio "Command Prompt"
+2. cd to this directory and run build.win32.bat
+3. if no errors occur, build.win32\lua_udf.dll will be created.
+
+Build lua_udf on Linux using GCC
+--------------------------------
+1. run build.linux32.sh
+2. if no errors occur, build.linux32/lua_udf.so will be created.
+

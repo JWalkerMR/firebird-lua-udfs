@@ -1,4 +1,0 @@
-#!/bin/bash
-
-./deploy /Files/fbtest-udf-directory
-

@@ -1,4 +1,0 @@
-#!/bin/bash
-
-./deploy /Files/fb-udf-directory
-

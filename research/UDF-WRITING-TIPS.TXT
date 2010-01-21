@@ -1,0 +1,41 @@
+#
+# UDF Writing notes for Firebird 2.5b1.
+# Cosmin Apreutesei, April 08, 2009.
+#
+#
+# General tips:
+# - by default, all input and output parameters are pointers, so `by reference' is the implicit calling method.
+# - if you never return null, use the `by value' calling method to avoid having to malloc the result.
+# - when returning `by reference', alloc the result using ib_util_malloc() from the ib_util library, and declare 
+# the udf with the `free_it' directive.
+# - in case your udf takes cstring(N) as the <n>'th parameter and returns cstring(at most N) of the same charset 
+# as that parameter, use `returns parameter <n>' instead, and just write on that parameter's buffer, instead of 
+# malloc'ing the result.
+#
+# Null handling:
+# - firebird 2.0+ will pass nulls as null pointers but only for parameters declared as `by reference null'.
+# otherwise you'll get a 0 (zero) for an integer or double parameter, and an empty string for a string parameter.
+# - null parameters can also be detected with the `by descriptor' calling method.
+# - returning a nil pointer is interpreted as null (note that you can't say `returning ... by reference null').
+#
+# Type mapping (firebird-freepascal):
+#       INTEGER BY REFERENCE - int32 pointer (if you need to catch/return nulls)
+#       INTEGER BY VALUE - int32
+#       DOUBLE PRECISION BY REFERENCE - double pointer
+#       DOUBLE PRECISION BY VALUE - double
+#       CSTRING(N) BY REFERENCE - pchar (so no embedded zeros, contrast to varchar!)
+#       CSTRING(N) BY VALUE - doesn't make sense
+#	VARCHAR(N) BY REFERENCE - offset 0: byte_length of type int16; offset 2: the string itself. 
+#	VARCHAR(N) BY VALUE - doesn't make sense
+#       <anything> BY DESCRIPTOR - PARAMDSC pointer (see ibase.h)
+#
+# Charsets:
+# - firebird gives/expects text parameters in the charsets the udf was declared with.
+# - for 8-bit-clean strings use VARCHAR instead of CSTRING, or use BY DESCRIPTOR calling method.
+#
+# Using descriptors:
+# - declaring parameters as `<datatype> by descriptor' won't guarrantee you that the engine will give you the 
+# values in that datatype! instead you gotta check dsc_dtype yourself and interpret the value accordingly. 
+# the advantage is you can write polymorphic functions.
+#
+

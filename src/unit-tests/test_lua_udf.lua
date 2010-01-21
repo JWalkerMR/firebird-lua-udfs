@@ -1,6 +1,6 @@
 #!/bin/lua
 
-dofile("lua_udf.lua")
+dofile("../lua_udf.lua")
 
 print("utf8_made_of: "..utf8_made_of('abcd', 'aaaabbbdddbcbdbbad'))
 print("utf8_is_integer: "..utf8_is_integer('001092301230'))
