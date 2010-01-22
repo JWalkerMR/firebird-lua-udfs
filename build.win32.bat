@@ -15,14 +15,13 @@ cl.exe /I %LUA_DIR% /I %FB_DIR% /I %MD5_DIR% %OPT% -DWINDOWS /c %C_FILES%
 link.exe %OBJ_FILES% /DLL /out:%OUT_DIR%\lua_udf.dll
 
 
-REM !!! The unit tests don't work if lua_udf is compiled with -DUSE_IB_UTIL_MALLOC !!!
+REM !!! The unit tests only work if lua_udf is compiled without -DUSE_IB_UTIL_MALLOC !!!
 
 cd unit-tests
 
-set OUT_DIR=..\%OUT_DIR%
-
-cl.exe -DWINDOWS /c test_lua_udf.c
-link.exe test_lua_udf.obj %OUT_DIR%\lua_udf.lib /out:%OUT_DIR%\test_lua_udf.exe
+REM set OUT_DIR=..\%OUT_DIR%
+REM cl.exe -DWINDOWS /c test_lua_udf.c
+REM link.exe test_lua_udf.obj %OUT_DIR%\lua_udf.lib /out:%OUT_DIR%\test_lua_udf.exe
 
 cd ..
 
