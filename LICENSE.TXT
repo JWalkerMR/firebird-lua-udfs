@@ -1,4 +1,4 @@
-lua-firebird-udf
+firebird-lua-udfs
 
 Copyright (c) 2009 Cosmin Apreutesei
 
