@@ -8,27 +8,30 @@ client library and Lua.
 
 Installation for Win32 platforms
 --------------------------------
-1. Copy build.win32\lua_udf.dll and src\lua_udf.lua to either
-your windows system32 directory or to the Firebird bin directory.
-2. Register the UDFs to your database by attaching to the database
+1. Copy build.win32\lua_udf.dll to your Firebird's UDF directory.
+2. Copy ib_util.dll to your Firebird's bin directory.
+3. Copy src\lua_udf.lua somewhere: you'll load it with full path
+via the UDF load_lua_lib(filepath), which will initialize the library.
+4. Register the UDFs to your database by attaching to the database
 and running src\lua_udf.sql.
 
 Installation for Linux32 platforms
 ----------------------------------
-1. Copy build.linux32/lua_udf.so and src/lua_udf.lua to either
-your global lib directory or to your Firebird lib directory.
-2. Register the UDFs to your database by attaching to the database
+1. Copy build.linux32/lua_udf.so to your Firebird's UDF directory.
+2. Copy src\lua_udf.lua somewhere: you'll load it with full path
+via the UDF load_lua_lib(filepath), which will initialize the library.
+3. Register the UDFs to your database by attaching to the database
 and running src\lua_udf.sql.
 
-Dependencies (all included)
----------------------------
-- Lua 5.1.4 public headers, static lib, dynamic lib
+Dependencies
+------------
+- Lua 5.1.4 public headers, static lib, dynamic lib (included)
   http://luabinaries.luaforge.net/download.html
-- Firebird 2.5 public headers, ib_util static & dynamic lib
+- Firebird 2.5 public headers, ib_util static & dynamic lib (included)
   http://sourceforge.net/projects/firebird/files/
-- md5.h + md5.c
+- md5.h + md5.c (included)
   http://sourceforge.net/projects/libmd5-rfc/files/
-- msvcrt80.dll (required on Win32 by Lua and ib_util)
+- MSVCRT 8.0 (required on Win32 by Lua and by ib_util; not included)
 
 Build lua_udf on Windows using MSVC++ 8.0
 -----------------------------------------

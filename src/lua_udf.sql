@@ -1,55 +1,53 @@
-DECLARE EXTERNAL FUNCTION ASCII_REPLACE_CHARS
-    VARCHAR(4096) CHARACTER SET ASCII NULL,
-    VARCHAR(4096) CHARACTER SET ASCII NULL,
-    VARCHAR(4096) CHARACTER SET ASCII NULL
-    RETURNS VARCHAR(4096) CHARACTER SET ASCII FREE_IT
-    ENTRY_POINT 'sbc_replace_chars' MODULE_NAME 'lua_udf';
+declare external function LOAD_LUA_LIB
+    cstring(200)
+    returns integer by value
+    entry_point 'load_lua_lib' module_name 'lua_udf';
 
+declare external function MD5
+    varchar(4096) character set UTF8 null
+    returns varchar(16) character set OCTETS free_it
+    entry_point 'md5' module_name 'lua_udf';
 
-DECLARE EXTERNAL FUNCTION BIN_TO_HEX
-    VARCHAR(2048) CHARACTER SET OCTETS NULL
-    RETURNS VARCHAR(4096) CHARACTER SET ASCII FREE_IT
-    ENTRY_POINT 'bin_to_hex' MODULE_NAME 'lua_udf';
+declare external function BIN_TO_HEX
+    varchar(2048) character set OCTETS null
+    returns varchar(4096) character set ASCII free_it
+    entry_point 'bin_to_hex' module_name 'lua_udf';
 
+declare external function ASCII_REPLACE_CHARS
+    varchar(4096) character set ASCII null,
+    varchar(4096) character set ASCII null,
+    varchar(4096) character set ASCII null
+    returns varchar(4096) character set ASCII free_it
+    entry_point 'sbc_replace_chars' module_name 'lua_udf';
 
-DECLARE EXTERNAL FUNCTION FILE_IS_READABLE
-    VARCHAR(2048) CHARACTER SET OCTETS NULL
-    RETURNS INTEGER BY VALUE
-    ENTRY_POINT 'file_is_readable' MODULE_NAME 'lua_udf';
+declare external function UTF8_REPLACE_CHARS
+    varchar(4096) character set UTF8,
+    varchar(4096) character set UTF8,
+    varchar(4096) character set UTF8
+    returns varchar(4096) character set UTF8 free_it
+    entry_point 'utf8_replace_chars' module_name 'lua_udf';
 
+declare external function UTF8_REPLACE_BUT_CHARS
+    varchar(4096) character set UTF8,
+    varchar(4096) character set UTF8,
+    varchar(4096) character set UTF8
+    returns varchar(4096) character set UTF8 free_it
+    entry_point 'utf8_replace_but_chars' module_name 'lua_udf';
 
-DECLARE EXTERNAL FUNCTION LUA_UDF_RELOAD_LIBRARY
+declare external function UTF8_MADE_OF
+    varchar(4096) character set UTF8,
+    varchar(4096) character set UTF8
+    returns double precision by value
+    entry_point 'utf8_made_of' module_name 'lua_udf';
 
-    RETURNS INTEGER BY VALUE
-    ENTRY_POINT 'reload_library' MODULE_NAME 'lua_udf';
+declare external function UTF8_IS_INTEGER
+    varchar(4096) character set UTF8
+    returns double precision by value
+    entry_point 'utf8_is_integer' module_name 'lua_udf';
 
-
-DECLARE EXTERNAL FUNCTION MD5
-    VARCHAR(4096) CHARACTER SET UTF8 NULL
-    RETURNS VARCHAR(16) CHARACTER SET OCTETS FREE_IT
-    ENTRY_POINT 'md5' MODULE_NAME 'lua_udf';
-
-
-DECLARE EXTERNAL FUNCTION UTF8_MADE_OF
-    VARCHAR(4096) CHARACTER SET UTF8,
-    VARCHAR(4096) CHARACTER SET UTF8
-    RETURNS DOUBLE PRECISION FREE_IT
-    ENTRY_POINT 'utf8_made_of' MODULE_NAME 'lua_udf';
-
-
-DECLARE EXTERNAL FUNCTION UTF8_REPLACE_BUT_CHARS
-    VARCHAR(4096) CHARACTER SET UTF8,
-    VARCHAR(4096) CHARACTER SET UTF8,
-    VARCHAR(4096) CHARACTER SET UTF8
-    RETURNS VARCHAR(4096) CHARACTER SET UTF8 FREE_IT
-    ENTRY_POINT 'utf8_replace_but_chars' MODULE_NAME 'lua_udf';
-
-
-DECLARE EXTERNAL FUNCTION UTF8_REPLACE_CHARS
-    VARCHAR(4096) CHARACTER SET UTF8,
-    VARCHAR(4096) CHARACTER SET UTF8,
-    VARCHAR(4096) CHARACTER SET UTF8
-    RETURNS VARCHAR(4096) CHARACTER SET UTF8 FREE_IT
-    ENTRY_POINT 'utf8_replace_chars' MODULE_NAME 'lua_udf';
+declare external function FILE_IS_READABLE
+    varchar(2048) character set OCTETS null
+    returns integer by value
+    entry_point 'file_is_readable' module_name 'lua_udf';
 
 

@@ -1,86 +1,101 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef WINDOWS
+    #include <windows.h>
+#else
+    #include <pthread.h>
+#endif
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
 #include "md5.h"
 #include "ibase.h"
-#include "lua_udf.h"
+
+#define ABI __cdecl
+
 #ifdef WINDOWS
-#include <windows.h>
-#else
-#include <pthread.h>
+    #define EXPORT __declspec(dllexport)
 #endif
 
 typedef long long int int64;
 
-#ifdef WINDOWS
-#define INIT
-#define FINI
-#else
-#define INIT __attribute__ ((constructor))
-#define FINI __attribute__ ((destructor))
-#endif
-#define EXPORT
 #ifdef USE_IB_UTIL_MALLOC
-#include "ib_util.h"
-#define my_malloc ib_util_malloc
-#else
-#define my_malloc malloc
+    #define malloc ib_util_malloc
+    #include "ib_util.h"
 #endif
 
 // INIT/FINI //
 
 lua_State* L;
 
-#ifdef WINDOWS
-    HANDLE LM;
-#else
-    pthread_mutex_t VLM;
-    pthread_mutex_t* LM = &VLM;
-#endif
-
 int ltry(char* f, int err) {
     if (err) {
-	printf("%s failed [%d]: %s", f, err, lua_tostring(L, -1));
-	lua_pop(L, 1);
+        printf("%s failed [%d]: %s", f, err, lua_tostring(L, -1));
+        lua_pop(L, 1);
     }
     return !err;
 }
 
-void INIT init() {
+EXPORT int ABI load_lua_lib(char* lua_udf_file);
+
 #ifdef WINDOWS
-    LM = CreateMutex(NULL, FALSE, NULL);
+
+HANDLE LM;
+
+BOOL APIENTRY DllMain(HANDLE hModule,
+                      DWORD  ul_reason_for_call,
+                      LPVOID lpReserved) {
+    switch (ul_reason_for_call) {
+        case DLL_PROCESS_ATTACH:
+            LM = CreateMutex(NULL, FALSE, NULL);
+            //load_lua_lib(LUA_UDF_FILE);
+        case DLL_PROCESS_DETACH:
+            CloseHandle(LM);
+    }
+    return TRUE;
+}
+
+void mutex_lock() {
+    WaitForSingleObject(LM, INFINITE);
+}
+
+void mutex_unlock() {
+    ReleaseMutex(LM);
+}
+
 #else
+
+pthread_mutex_t VLM;
+pthread_mutex_t* LM = &VLM;
+
+void __attribute__ ((constructor)) ABI init() {
     pthread_mutex_init(LM, NULL);
-#endif
+    //load_lua_lib(LUA_UDF_FILE);
 }
 
-void FINI fini() {
+void __attribute__ ((destructor)) ABI fini() {
     if (L) lua_close(L);
-#ifdef WINDOWS
-    CloseHandle(LM);
-#else
     pthread_mutex_destroy(LM);
-#endif
 }
 
-#ifdef WINDOWS
-#define mutex_lock() WaitForSingleObject(LM, INFINITE)
-#define mutex_unlock() ReleaseMutex(LM)
-#else
-#define mutex_lock() pthread_mutex_lock(LM)
-#define mutex_unlock() pthread_mutex_unlock(LM)
+void mutex_lock() {
+    pthread_mutex_lock(LM);
+}
+
+void mutex_unlock() {
+    pthread_mutex_unlock(LM);
+}
+
 #endif
 
 // LUA EXPORTS //
 
-int EXPORT load_lua_lib(char* lua_udf_file) {
+EXPORT int ABI load_lua_lib(char* lua_udf_file) {
     int ok;
 
 	if (!lua_udf_file)
-	return 0;
+        return 0;
 
     mutex_lock();
 
@@ -127,7 +142,7 @@ char* ret_varchar(lua_State* L) {
 	return 0;
 
     s = lua_tolstring(L, -1, &len);
-    r = my_malloc(len + sizeof(short));
+    r = malloc(len + sizeof(short));
     *(short*)r = len;
     memcpy(r + sizeof(short), s, len);
     lua_pop(L, 1);
@@ -135,14 +150,13 @@ char* ret_varchar(lua_State* L) {
     return r;
 }
 
-double* ret_double(lua_State* L) {
-    double* r;
+double ret_double(lua_State* L) {
+    double r;
 
 	if (lua_isnil(L, -1))
 	return 0;
 
-    r = my_malloc(sizeof(double));
-    *r = lua_tonumber(L, -1);
+    r = lua_tonumber(L, -1);
     lua_pop(L, 1);
     mutex_unlock();
     return r;
@@ -150,7 +164,7 @@ double* ret_double(lua_State* L) {
 
 // C EXPORTS //
 
-int EXPORT file_is_readable(char* s) {
+EXPORT int ABI file_is_readable(char* s) {
     FILE* f;
 
 	if (!s) return 0;
@@ -162,7 +176,7 @@ int EXPORT file_is_readable(char* s) {
     return 0;
 }
 
-char* EXPORT bin_to_hex(char* s) {
+EXPORT char* ABI bin_to_hex(char* s) {
 	char* hex;
 	int len;
 	char* r;
@@ -172,7 +186,7 @@ char* EXPORT bin_to_hex(char* s) {
 
 	hex = "0123456789ABCDEF";
     len = *(short*)s;
-    r = my_malloc(len*2 + sizeof(short) + sizeof(char));
+    r = malloc(len*2 + sizeof(short) + sizeof(char));
 
     *(short*)r = len*2;
     r[len*2 + sizeof(short)] = 0;
@@ -183,7 +197,7 @@ char* EXPORT bin_to_hex(char* s) {
     return r;
 }
 
-char* EXPORT md5(char* s) {
+EXPORT char* ABI md5(char* s) {
     md5_state_t state;
     md5_byte_t digest[16];
 	char* r;
@@ -195,7 +209,7 @@ char* EXPORT md5(char* s) {
     md5_append(&state, (const md5_byte_t *)(s+2), *(short*)s);
     md5_finish(&state, digest);
 
-    r = my_malloc(16 + sizeof(short) + sizeof(char));
+    r = malloc(16 + sizeof(short) + sizeof(char));
     *(short*)r = 16;
     r[16 + sizeof(short)] = 0;
     memcpy(r+2, &digest, 16);
@@ -212,7 +226,7 @@ char* v_v(char* f, char* s) {
     return ret_varchar(L);
 }
 
-double* d_v(char* f, char* s) {
+double d_v(char* f, char* s) {
     mutex_lock();
     lua_getglobal(L, f);
     push_varchar(L, s);
@@ -229,7 +243,7 @@ char* v_vv(char* f, char* p, char* s) {
     return ret_varchar(L);
 }
 
-double* d_vv(char* f, char* p, char* s) {
+double d_vv(char* f, char* p, char* s) {
     mutex_lock();
     lua_getglobal(L, f);
     push_varchar(L, p);
@@ -248,29 +262,29 @@ char* v_vvv(char* f, char* p1, char* p2, char* s) {
     return ret_varchar(L);
 }
 
-char* EXPORT sbc_replace_chars(char* find, char* replace, char* s) {
+EXPORT char* ABI sbc_replace_chars(char* find, char* replace, char* s) {
 	return v_vvv("sbc_replace_chars", find, replace, s);
 }
 
-char* EXPORT utf8_replace_chars(char* find, char* replace, char* s) {
+EXPORT char* ABI utf8_replace_chars(char* find, char* replace, char* s) {
 	return v_vvv("utf8_replace_chars", find, replace, s);
 }
 
-char* EXPORT utf8_replace_but_chars(char* leave, char* replace, char* s) {
+EXPORT char* ABI utf8_replace_but_chars(char* leave, char* replace, char* s) {
 	return v_vvv("utf8_replace_but_chars", leave, replace, s);
 }
 
-double* EXPORT utf8_made_of(char* list, char* s) {
+EXPORT double ABI utf8_made_of(char* list, char* s) {
 	return d_vv("utf8_made_of", list, s);
 }
 
-double* EXPORT utf8_is_integer(char* s) {
+EXPORT double ABI utf8_is_integer(char* s) {
 	return d_v("utf8_is_integer", s);
 }
 
 // TESTING //
 
-char* EXPORT test_call_chain(char* s) {
+EXPORT char* ABI test_call_chain(char* s) {
     size_t len;
 	const char* t;
 	char* r;
@@ -280,14 +294,14 @@ char* EXPORT test_call_chain(char* s) {
     lua_pushlstring(L, s, strlen(s));
     lua_call(L, 1, 1);
     t = lua_tolstring(L, -1, &len);
-    r = my_malloc(len + sizeof(char));
+    r = malloc(len + sizeof(char));
     memcpy(r, t, len + sizeof(char));
     lua_pop(L, 1);
     mutex_unlock();
     return r;
 }
 
-char* EXPORT test_varchar_conv(char* s) {
+EXPORT char* ABI test_varchar_conv(char* s) {
     mutex_lock();
     push_varchar(L, s);
     return ret_varchar(L);
